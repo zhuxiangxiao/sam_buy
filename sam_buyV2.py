@@ -233,8 +233,8 @@ def getUserCart(addressList, storeList, uid):
             print('目前有库存：' + normalGoodsList[i].get('goodsName') + '\t#数量：' + str(quantity) + '\t#金额：' + str(
                 int(normalGoodsList[i].get('price')) / 100) + '元')
             goodlist.append(goodlistitem)
-            amount = int(getAmout(goodlist))
-
+            
+        amount = int(getAmout(goodlist))
         print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
 
         if Capacity_index > 0:
