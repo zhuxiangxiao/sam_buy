@@ -4,12 +4,64 @@ from time import sleep
 
 # ## init config ###
 # 填写个人信息
+
 deviceid = 'x'
 authtoken = 'x'
 trackinfo = 'x'
-deliveryType = '0' # 1：极速达 2：全城配送
-cartDeliveryType = 1 #  1：极速达 2：全城配送
+deliveryType = '0'  # 1：极速达 2：全城配送
+cartDeliveryType = 1  # 1：极速达 2：全城配送
+
+
 # ## init config over ###
+
+def getAmout(goodlist):
+    global amout
+    myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/settlement/getSettleInfo'
+    headers = {
+        'Host': 'api-sams.walmartmobile.cn',
+        'Connection': 'keep-alive',
+        'Accept': '*/*',
+        'Content-Type': 'application/json;charset=UTF-8',
+        'Content-Length': '45',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'User-Agent': 'SamClub/5.0.45 (iPhone; iOS 15.4; Scale/3.00)',
+        'device-name': 'iPhone14,3',
+        'device-os-version': '15.4',
+        'device-id': deviceid,
+        'latitude': address.get('latitude'),
+        'longitude': address.get('longitude'),
+        'device-type': 'ios',
+        'auth-token': authtoken,
+        'app-version': '5.0.45.1'
+    }
+    data = {
+        "goodsList": goodlist,
+        "uid": uid,
+        "addressId": addressList_item.get('addressId'),
+        "deliveryInfoVO": {
+            "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId'),
+            "deliveryModeId": good_store.get('deliveryModeId'),
+            "storeType": good_store.get('storeType')
+        },
+        "cartDeliveryType": cartDeliveryType,
+        "storeInfo": {
+            "storeId": good_store.get('storeId'),
+            "storeType": good_store.get('storeType'),
+            "areaBlockId": good_store.get('areaBlockId')
+        },
+        "couponList": [],
+        "isSelfPickup": 0,
+        "floorId": 1,
+    }
+
+    try:
+        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
+        myRet = json.loads(ret.text)
+        amout = myRet['data'].get('totalAmount')
+        return amout
+    except Exception as e:
+        print('getAmout [Error]: ' + str(e))
 
 
 def address_list():
@@ -168,8 +220,6 @@ def getUserCart(addressList, storeList, uid):
         # print(myRet['data'].get('capcityResponseList')[0])
         normalGoodsList = (myRet['data'].get('floorInfoList')[0].get('normalGoodsList'))
         # time_list = myRet['data'].get('capcityResponseList')[0].get('list')
-        goodlist = []
-        amount = 0
         for i in range(0, len(normalGoodsList)):
             spuId = normalGoodsList[i].get('spuId')
             storeId = normalGoodsList[i].get('storeId')
@@ -182,8 +232,8 @@ def getUserCart(addressList, storeList, uid):
             }
             print('目前有库存：' + normalGoodsList[i].get('goodsName') + '\t#数量：' + str(quantity) + '\t#金额：' + str(
                 int(normalGoodsList[i].get('price')) / 100) + '元')
-            amount += int(normalGoodsList[i].get('price'))
             goodlist.append(goodlistitem)
+            amount = int(getAmout(goodlist))
 
         print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
 
@@ -205,7 +255,7 @@ def getCapacityData():
     data = {
         # YOUR SELF
         "perDateList": ["2022-04-13", "2022-04-14", "2022-04-15", "2022-04-16", "2022-04-17", "2022-04-18",
-                        "2022-04-19"], "storeDeliveryTemplateId": "1183861410011172630"
+                        "2022-04-19"], "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId')
     }
     headers = {
         'Host': 'api-sams.walmartmobile.cn',
@@ -335,6 +385,7 @@ if __name__ == '__main__':
     Capacity_index = 0
     startRealTime = ''
     endRealTime = ''
+    goodlist = []
     # 初始化
     address, store, uid = init()
     if getUserCart(address, store, uid):
@@ -343,4 +394,4 @@ if __name__ == '__main__':
             count += 1
             print('count:' + str(count))
             getCapacityData()
-            sleep(3)
+            sleep(5)
