@@ -5,7 +5,8 @@ import configparser
 import datetime
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('config.ini',"utf-8")
+
 
 # ## init config ###
 # 填写个人信息
