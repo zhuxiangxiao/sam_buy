@@ -9,12 +9,21 @@ app version: v5.0.45.1;
 
 python version: 3.8.6;
 
+## 更新须知
+##引入configparser,requests 组件
+执行
+```bash
+
+pip install --index-url https://pypi.douban.com/simple/ configparser
+pip install --index-url https://pypi.douban.com/simple/ requests
+
+```
 
 ## 有代码基础的使用v1分支,无基础使用v2
 ##代码中有注释，遵循注释进行修改 运行即可
 
 # 关于配置
-
+请修改config.ini文件
 deviceid,authtoken,trackinfo三个字段为购物车的HTTP头部的字段信息
 
 依旧没有bark支持，需要的请自行添加
