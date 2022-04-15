@@ -2,14 +2,13 @@ import json
 import requests
 from time import sleep
 
-
 # ## init config ###
 # 填写个人信息
 deviceid = 'x'
 authtoken = 'x'
 trackinfo = 'x'
-
-
+deliveryType = '0' # 1：极速达 2：全城配送
+cartDeliveryType = 1 #  1：极速达 2：全程=全城配送
 # ## init config over ###
 
 
@@ -139,7 +138,7 @@ def getUserCart(addressList, storeList, uid):
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/cart/getUserCart'
     data = {
         # YOUR SELF
-        "uid": uid, "deliveryType": "0", "deviceType": "ios", "storeList": storeList, "parentDeliveryType": 1,
+        "uid": uid, "deliveryType": deliveryType, "deviceType": "ios", "storeList": storeList, "parentDeliveryType": 1,
         "homePagelongitude": addressList.get('longitude'), "homePagelatitude": addressList.get('latitude')
     }
     headers = {
@@ -253,9 +252,9 @@ def order(startRealTime, endRealTime):
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/settlement/commitPay'
     data = {"goodsList": goodlist,
             "invoiceInfo": {},
-            "cartDeliveryType": 1, "floorId": 1, "amount": amount, "purchaserName": "",
+            "cartDeliveryType": cartDeliveryType, "floorId": 1, "amount": amount, "purchaserName": "",
             "settleDeliveryInfo": {"expectArrivalTime": startRealTime, "expectArrivalEndTime": endRealTime,
-                                   "deliveryType": 0}, "tradeType": "APP", "purchaserId": "", "payType": 0,
+                                   "deliveryType": deliveryType}, "tradeType": "APP", "purchaserId": "", "payType": 0,
             "currency": "CNY", "channel": "wechat", "shortageId": 1, "isSelfPickup": 0, "orderType": 0,
             "uid": uid, "appId": "wx57364320cb03dfba", "addressId": addressList_item.get('addressId'),
             "deliveryInfoVO": {"storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId'),
