@@ -8,7 +8,7 @@ deviceid = 'x'
 authtoken = 'x'
 trackinfo = 'x'
 deliveryType = '0' # 1：极速达 2：全城配送
-cartDeliveryType = 1 #  1：极速达 2：全程=全城配送
+cartDeliveryType = 1 #  1：极速达 2：全城配送
 # ## init config over ###
 
 
