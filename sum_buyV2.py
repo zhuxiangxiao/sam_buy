@@ -2,6 +2,7 @@ import json
 import requests
 from time import sleep
 
+
 # ## init config ###
 # 填写个人信息
 deviceid = 'x'
