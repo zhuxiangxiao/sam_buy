@@ -8,8 +8,8 @@ from time import sleep
 deviceid = 'x'
 authtoken = 'x'
 trackinfo = 'x'
-deliveryType = '2'  # 1：极速达 2：全城配送
-cartDeliveryType = 2  # 1：极速达 2：全城配送
+deliveryType = '0'  # string类型 默认0就好不需要改，具体不详  1：极速达 2：全城配送
+cartDeliveryType = 2  # int类型 必改 1：极速达 2：全程=全城配送
 
 
 # ## init config over ###
@@ -107,8 +107,10 @@ def address_list():
             'latitude': addressList[i].get('latitude'),
             'longitude': addressList[i].get('longitude')
         })
-        print('[' + str(i) + ']' + str(addressList[i].get("name")) + str(addressList[i].get("mobile")) + str(addressList[i].get(
-            "districtName")) + str(addressList[i].get("receiverAddress")) + str(addressList[i].get("detailAddress")))
+        print('[' + str(i) + ']' + str(addressList[i].get("name")) + str(addressList[i].get("mobile")) + str(
+            addressList[i].get(
+                "districtName")) + str(addressList[i].get("receiverAddress")) + str(
+            addressList[i].get("detailAddress")))
     print('根据编号选择地址:')
     s = int(input())
     addressList_item = addressList_item[s]
@@ -192,8 +194,9 @@ def getRecommendStoreListByLocation(latitude, longitude):
 def getUserCart(addressList, storeList, uid):
     global goodlist
     global amount
-    global getUserCart_index
-    getUserCart_index += 1
+    # 初始化goodlist置为空
+    goodlist = []
+
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/cart/getUserCart'
     data = {
         # YOUR SELF
@@ -239,17 +242,17 @@ def getUserCart(addressList, storeList, uid):
             }
             print('目前有库存：' + str(normalGoodsList[i].get('goodsName')) + '\t#数量：' + str(quantity) + '\t#金额：' + str(
                 int(normalGoodsList[i].get('price')) / 100) + '元')
-            if getUserCart_index > 1:
-                break
-            else:
-                goodlist.append(goodlistitem)
+            # if getUserCart_index > 1:
+            #     break
+            # else:
+            goodlist.append(goodlistitem)
 
         getAmountStatus, amount = getAmount(goodlist)
         if getAmountStatus:
             print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
         else:
-            print('###商店未开放,间隔60sec查询中')
-            sleep(60)
+            print('###商店未开放或未成功获取总价格,间隔30sec查询中')
+            sleep(30)
             getUserCart(addressList, storeList, uid)
 
         if Capacity_index > 0:
@@ -269,8 +272,8 @@ def getCapacityData():
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/delivery/portal/getCapacityData'
     data = {
         # YOUR SELF
-        "perDateList": ["2022-04-13", "2022-04-14", "2022-04-15", "2022-04-16", "2022-04-17", "2022-04-18",
-                        "2022-04-19"], "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId')
+        "perDateList": ["2022-04-16", "2022-04-17", "2022-04-18", "2022-04-19", "2022-04-20", "2022-04-21",
+                        "2022-04-22"], "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId')
     }
     headers = {
         'Host': 'api-sams.walmartmobile.cn',
@@ -314,6 +317,9 @@ def getCapacityData():
 def order(startRealTime, endRealTime):
     global index
     print('下单：' + startRealTime)
+    print('[debug addressList_item]:'+str(addressList_item))
+    print('[debug good_store]:'+str(good_store))
+    print('[debug goodlist]:'+str(goodlist))
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/settlement/commitPay'
     data = {"goodsList": goodlist,
             "invoiceInfo": {},
@@ -367,17 +373,20 @@ def order(startRealTime, endRealTime):
                 return
             elif myRet.get('code') == 'LIMITED':
                 index += 1
-                if index > 5:
+                if index > 3:
                     index = 0
-                    getCapacityData()
-                order(startRealTime, endRealTime)
-                return
+                    return
+                else:
+                    order(startRealTime, endRealTime)
+                    return
+                    # getCapacityData()
+                # order(startRealTime, endRealTime)
             elif myRet.get('code') == 'OUT_OF_STOCK':
                 print('warning OUT_OF_STOCK')
                 getUserCart(addressList_item, good_store, uid)
                 return
             else:
-                getCapacityData()
+                # getCapacityData()
                 return
 
     except Exception as e:
@@ -398,7 +407,6 @@ if __name__ == '__main__':
     count = 0
     index = 0
     Capacity_index = 0
-    getUserCart_index = 0
     startRealTime = ''
     endRealTime = ''
     goodlist = []
@@ -408,9 +416,15 @@ if __name__ == '__main__':
         # getCapacityData
         while 1:
             count += 1
-            print('count:' + str(count))
-            getCapacityData()
-            sleep(5)
+            # 每十次 获取一次购物车物品状态
+            if count % 10 == 0:
+                print('###重新获取购物车 商品库存')
+                getUserCart(address, store, uid)
+                continue
+            else:
+                print('count:' + str(count))
+                getCapacityData()
+                sleep(5)
     else:
         sleep(60)
         getUserCart(address, store, uid)
