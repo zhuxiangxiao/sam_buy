@@ -1,15 +1,22 @@
 import json
 import requests
 from time import sleep
+import configparser
+import datetime
+
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 # ## init config ###
 # 填写个人信息
 
-deviceid = 'x'
-authtoken = 'x'
-trackinfo = 'x'
-deliveryType = '0'  # string类型 默认0就好不需要改，具体不详  1：极速达 2：全城配送
-cartDeliveryType = 2  # int类型 必改 1：极速达 2：全程=全城配送
+deviceid = config.get('userInfo','deviceid')
+authtoken = config.get('userInfo','authtoken')
+trackinfo= config.get('userInfo','trackinfo')
+
+deliveryType = 0  # 1：极速达 2：全城配送
+cartDeliveryType = 2  # 1：极速达 2：全城配送
+timeOrder= config.get('system','timeOrder')
 
 
 # ## init config over ###
@@ -251,7 +258,7 @@ def getUserCart(addressList, storeList, uid):
         if getAmountStatus:
             print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
         else:
-            print('###商店未开放或未成功获取总价格,间隔30sec查询中')
+            print('###商店未开放或未成功获取总价格,或者总金额计算错误,间隔30sec查询中')
             sleep(30)
             getUserCart(addressList, storeList, uid)
 
@@ -270,10 +277,13 @@ def getCapacityData():
     global endRealTime
 
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/delivery/portal/getCapacityData'
+    date_list = []
+    for i in range(0,7):
+        date_list.append(
+            (datetime.datetime.now() + datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+        )
     data = {
-        # YOUR SELF
-        "perDateList": ["2022-04-16", "2022-04-17", "2022-04-18", "2022-04-19", "2022-04-20", "2022-04-21",
-                        "2022-04-22"], "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId')
+        "perDateList": date_list, "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId')
     }
     headers = {
         'Host': 'api-sams.walmartmobile.cn',
@@ -309,6 +319,7 @@ def getCapacityData():
                 print('#【成功】获取配送时间')
                 order(startRealTime, endRealTime)
                 return True
+        print("#【失败】配送时间满了！")
     except Exception as e:
         print('getCapacityData [Error]: ' + str(e))
         return False
@@ -357,7 +368,7 @@ def order(startRealTime, endRealTime):
 
     try:
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
-        print(ret.text)
+        # print(ret.text)
         myRet = json.loads(ret.text)
         status = myRet.get('success')
         if status:
@@ -369,18 +380,18 @@ def order(startRealTime, endRealTime):
         else:
             if myRet.get('code') == 'STORE_HAS_CLOSED':
                 sleep(60)
-                getCapacityData()
+                # getCapacityData()
                 return
             elif myRet.get('code') == 'LIMITED':
                 index += 1
-                if index > 3:
+                if index > 5:
                     index = 0
                     return
+                    # getCapacityData()
+                    # bug fix 防止堆栈溢出
                 else:
                     order(startRealTime, endRealTime)
-                    return
-                    # getCapacityData()
-                # order(startRealTime, endRealTime)
+                return
             elif myRet.get('code') == 'OUT_OF_STOCK':
                 print('warning OUT_OF_STOCK')
                 getUserCart(addressList_item, good_store, uid)
@@ -391,7 +402,7 @@ def order(startRealTime, endRealTime):
 
     except Exception as e:
         print('order [Error]: ' + str(e))
-        getCapacityData()
+        # getCapacityData()
         return False
 
 
@@ -407,6 +418,7 @@ if __name__ == '__main__':
     count = 0
     index = 0
     Capacity_index = 0
+    getUserCart_index = 0
     startRealTime = ''
     endRealTime = ''
     goodlist = []
@@ -422,9 +434,20 @@ if __name__ == '__main__':
                 getUserCart(address, store, uid)
                 continue
             else:
-                print('count:' + str(count))
                 getCapacityData()
-                sleep(5)
+            now=datetime.datetime.now();
+            # now = datetime.datetime(2022,4,16,20,59)
+            isOpenTime = False
+            try:
+                isOpenTime = ([20,10].index(now.hour) > -1 and [57,58,59].index(now.minute) > -1
+                         or [21,11].index(now.hour) > -1 and now.minute < 6)
+            except Exception as e:
+                isOpenTime = False
+            if isOpenTime:
+                sleep(3)
+            else:
+                sleep(6)
+
     else:
         sleep(60)
         getUserCart(address, store, uid)
