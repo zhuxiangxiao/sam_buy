@@ -36,5 +36,11 @@ deviceid,authtoken,trackinfo三个字段为购物车的HTTP头部的字段信息
 ![Alt text](https://github.com/azhan1998/sam_buy/blob/main/QRcode.jpg)
 
 # 仅供学习交流，不可用于非法牟利。
+
 # 版权说明
+
 本项目为 GPL3.0 协议，请所有进行二次开发的开发者遵守 GPL3.0协议，并且不得将代码用于商用。
+
+本项目仅供学习交流，严禁用作商业行为，特别禁止黄牛加价代抢等！
+
+因违法违规等不当使用导致的后果与本人无关，如有任何问题可联系本人删除！
