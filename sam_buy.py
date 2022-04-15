@@ -101,6 +101,9 @@ def getCapacityData():
                 # print(startRealTime)
                 print('【成功】获取配送时间')
                 order(startRealTime, endRealTime)
+                break
+            else:
+                continue
     except Exception as e:
         print('getCapacityData [Error]: ' + str(e))
         return False
@@ -147,7 +150,7 @@ def order(startRealTime,endRealTime):
         'app-version': '5.0.45.1'
 
     }
-   try:
+    try:
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
         print(ret.text)
         myRet = json.loads(ret.text)
@@ -162,13 +165,23 @@ def order(startRealTime,endRealTime):
             if myRet.get('code') == 'STORE_HAS_CLOSED':
                 sleep(60)
                 getCapacityData()
+                return
             elif myRet.get('code') == 'LIMITED':
                 index += 1
                 if index > 3:
                     getCapacityData()
                 order(startRealTime, endRealTime)
+                return
+            elif myRet.get('code') == 'OUT_OF_STOCK':
+                # TODO deal with OUT_OF_STOCK
+                print('warning OUT_OF_STOCK')
+#                 getUserCart()
+                getCapacityData()
+                return
             else:
                 getCapacityData()
+                return
+
 
     except Exception as e:
         print('order [Error]: ' + str(e))
@@ -182,4 +195,5 @@ while 1:
     count = count + 1
     print(count)
     getCapacityData()
+    # sleep小于3s 会触发limited
     sleep(6)
