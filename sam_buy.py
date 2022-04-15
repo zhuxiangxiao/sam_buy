@@ -169,6 +169,7 @@ def order(startRealTime,endRealTime):
             elif myRet.get('code') == 'LIMITED':
                 index += 1
                 if index > 3:
+                    index = 0
                     getCapacityData()
                 order(startRealTime, endRealTime)
                 return
