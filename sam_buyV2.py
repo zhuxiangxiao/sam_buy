@@ -8,14 +8,14 @@ from time import sleep
 deviceid = 'x'
 authtoken = 'x'
 trackinfo = 'x'
-deliveryType = '0'  # 1：极速达 2：全城配送
-cartDeliveryType = 1  # 1：极速达 2：全城配送
+deliveryType = '2'  # 1：极速达 2：全城配送
+cartDeliveryType = 2  # 1：极速达 2：全城配送
 
 
 # ## init config over ###
 
-def getAmout(goodlist):
-    global amout
+def getAmount(goodlist):
+    global amount
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/settlement/getSettleInfo'
     headers = {
         'Host': 'api-sams.walmartmobile.cn',
@@ -58,10 +58,16 @@ def getAmout(goodlist):
     try:
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
         myRet = json.loads(ret.text)
-        amout = myRet['data'].get('totalAmount')
-        return amout
+        amount = ''
+        if myRet['success']:
+            amount = myRet['data'].get('totalAmount')
+            return True, amount
+        else:
+            print(str(myRet['code']) + str(myRet['msg']))
+            return False, amount
     except Exception as e:
-        print('getAmout [Error]: ' + str(e))
+        print('getAmount [Error]: ' + str(e))
+        exit()
 
 
 def address_list():
@@ -101,8 +107,8 @@ def address_list():
             'latitude': addressList[i].get('latitude'),
             'longitude': addressList[i].get('longitude')
         })
-        print('[' + str(i) + ']' + addressList[i].get("name") + addressList[i].get("mobile") + addressList[i].get(
-            "districtName") + addressList[i].get("receiverAddress") + addressList[i].get("detailAddress"))
+        print('[' + str(i) + ']' + str(addressList[i].get("name")) + str(addressList[i].get("mobile")) + str(addressList[i].get(
+            "districtName")) + str(addressList[i].get("receiverAddress")) + str(addressList[i].get("detailAddress")))
     print('根据编号选择地址:')
     s = int(input())
     addressList_item = addressList_item[s]
@@ -152,7 +158,7 @@ def getRecommendStoreListByLocation(latitude, longitude):
                     'deliveryModeId': storeList[i].get('storeDeliveryModeVerifyData').get("deliveryModeId"),
                     'storeName': storeList[i].get("storeName")
                 })
-            print('[' + str(i) + ']' + storeList_item[i].get("storeId") + storeList_item[i].get("storeName"))
+            print('[' + str(i) + ']' + str(storeList_item[i].get("storeId")) + str(storeList_item[i].get("storeName")))
         print('根据编号下单商店:')
         s = int(input())
         good_store = storeList_item[s]
@@ -186,7 +192,8 @@ def getRecommendStoreListByLocation(latitude, longitude):
 def getUserCart(addressList, storeList, uid):
     global goodlist
     global amount
-
+    global getUserCart_index
+    getUserCart_index += 1
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/cart/getUserCart'
     data = {
         # YOUR SELF
@@ -230,12 +237,20 @@ def getUserCart(addressList, storeList, uid):
                 "isSelected": 'true',
                 "quantity": quantity,
             }
-            print('目前有库存：' + normalGoodsList[i].get('goodsName') + '\t#数量：' + str(quantity) + '\t#金额：' + str(
+            print('目前有库存：' + str(normalGoodsList[i].get('goodsName')) + '\t#数量：' + str(quantity) + '\t#金额：' + str(
                 int(normalGoodsList[i].get('price')) / 100) + '元')
-            goodlist.append(goodlistitem)
-            
-        amount = int(getAmout(goodlist))
-        print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
+            if getUserCart_index > 1:
+                break
+            else:
+                goodlist.append(goodlistitem)
+
+        getAmountStatus, amount = getAmount(goodlist)
+        if getAmountStatus:
+            print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
+        else:
+            print('###商店未开放,间隔60sec查询中')
+            sleep(60)
+            getUserCart(addressList, storeList, uid)
 
         if Capacity_index > 0:
             getCapacityData()
@@ -280,7 +295,7 @@ def getCapacityData():
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
         # print(ret.text)
         myRet = json.loads(ret.text)
-        print('#无库存释放,等待中')
+        print('#获取可用配送时间中')
         status = (myRet['data'].get('capcityResponseList')[0].get('dateISFull'))
         time_list = myRet['data'].get('capcityResponseList')[0].get('list')
         for i in range(0, len(time_list)):
@@ -383,6 +398,7 @@ if __name__ == '__main__':
     count = 0
     index = 0
     Capacity_index = 0
+    getUserCart_index = 0
     startRealTime = ''
     endRealTime = ''
     goodlist = []
@@ -395,3 +411,6 @@ if __name__ == '__main__':
             print('count:' + str(count))
             getCapacityData()
             sleep(5)
+    else:
+        sleep(60)
+        getUserCart(address, store, uid)
