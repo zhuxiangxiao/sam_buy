@@ -12,20 +12,18 @@ python version: 3.8.6;
 
 ## 代码中有注释，遵循注释进行修改 运行即可
 
-# 关于抓包
-鄙人用的是http catcher(applestore可以下载)，实测charles也可以。
+# 关于配置
 
-至于https包显示unknown请自行查阅https抓包的问题（多半是证书配置问题）
+deviceid,authtoken,trackinfo三个字段为购物车的HTTP头部的字段信息
+
+依旧没有bark支持，需要的请自行添加
 
 # 疫情当下上海买菜太难了
 
-getCapacityData跑通了后（计数器开始）,记得测试一下commitpay方法。
 
-测试方法：
+关于测试：
 
 把代码中唯一一句 if not 中的not去掉然后运行脚本，显示配送时间预约满 即为测试成功.
-
-显示库存不足或者其他的错误需要检查commitpay方法的data.
 
 另外 测试完成后记得还原if not.
 
