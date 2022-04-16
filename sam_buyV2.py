@@ -331,7 +331,7 @@ def getCapacityData():
                     print('#[success]Get shipping time')
                     order(startRealTime, endRealTime)
                     return True
-            print("#[fail]shipping time is full!")
+            print("#[retry]shipping time is full!")
         else:
             print(ret.text)
             return False
