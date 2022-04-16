@@ -1,11 +1,11 @@
 # sam_buy
 山姆买菜
 
+### 如果本工程对你有所帮助,记得点个star鼓励一下作者QAQ :)
+
 platform: ios15;
 
-
 app version: v5.0.45.1;
-
 
 python version: 3.8.6;
 
