@@ -8,11 +8,13 @@ config = configparser.ConfigParser()
 config.read('config.ini', "utf-8")
 
 # ## init config ###
+
 # 填写个人信息
 deviceid = config.get('userInfo', 'deviceid')
 authtoken = config.get('userInfo', 'authtoken')
 trackinfo = config.get('userInfo', 'trackinfo')
 
+# 浦东、青浦店 选择全城配送
 deliveryType_cart = 2  # 1：极速达 2：全城配送
 cartDeliveryType = 2  # 1：极速达 2：全城配送
 
@@ -71,6 +73,12 @@ def getAmount(goodlist):
             return True, amount
         else:
             print(str(myRet['code']) + str(myRet['msg']))
+            if myRet['code'] == 'NO_MATCH_DELIVERY_MODE':
+                print('请检查购物车情况,wait 30 sec')
+                sleep(30)
+            elif myRet['code'] == 'LIMITED':
+                sleep(0.5)
+                return False, amount
             return False, amount
     except Exception as e:
         print('getAmount [Error]: ' + str(e))
@@ -232,41 +240,48 @@ def getUserCart(addressList, storeList, uid):
     }
     try:
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
-        # print(ret.text)
         myRet = json.loads(ret.text)
-        # print(myRet['data'].get('capcityResponseList')[0])
-        normalGoodsList = (myRet['data'].get('floorInfoList')[0].get('normalGoodsList'))
-        # time_list = myRet['data'].get('capcityResponseList')[0].get('list')
-        for i in range(0, len(normalGoodsList)):
-            spuId = normalGoodsList[i].get('spuId')
-            storeId = normalGoodsList[i].get('storeId')
-            quantity = normalGoodsList[i].get('quantity')
-            goodlistitem = {
-                "spuId": spuId,
-                "storeId": storeId,
-                "isSelected": 'true',
-                "quantity": quantity,
-            }
-            print('目前有库存：' + str(normalGoodsList[i].get('goodsName')) + '\t#数量：' + str(quantity) + '\t#金额：' + str(
-                int(normalGoodsList[i].get('price')) / 100) + '元')
-            # if getUserCart_index > 1:
-            #     break
+        if myRet['success']:
+            # print(myRet['data'].get('capcityResponseList')[0])
+            normalGoodsList = (myRet['data'].get('floorInfoList')[0].get('normalGoodsList'))
+            # time_list = myRet['data'].get('capcityResponseList')[0].get('list')
+            for i in range(0, len(normalGoodsList)):
+                spuId = normalGoodsList[i].get('spuId')
+                storeId = normalGoodsList[i].get('storeId')
+                quantity = normalGoodsList[i].get('quantity')
+                goodlistitem = {
+                    "spuId": spuId,
+                    "storeId": storeId,
+                    "isSelected": 'true',
+                    "quantity": quantity,
+                }
+                print('目前有库存：' + str(normalGoodsList[i].get('goodsName')) + '\t#数量：' + str(quantity) + '\t#金额：' + str(
+                    int(normalGoodsList[i].get('price')) / 100) + '元')
+                # if getUserCart_index > 1:
+                #     break
+                # else:
+                goodlist.append(goodlistitem)
+
+            getAmountStatus, amount = getAmount(goodlist)
+            if getAmountStatus:
+                print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
+                return True
+            else:
+                print('###商店未开放或未成功获取总价格,或者总金额计算错误,间隔30sec查询中')
+                sleep(1)
+                if getUserCart(addressList, storeList, uid):
+                    return True
+                # return False
+
+            # if Capacity_index > 0:
+            #     getCapacityData()
+            #     return False
             # else:
-            goodlist.append(goodlistitem)
-
-        getAmountStatus, amount = getAmount(goodlist)
-        if getAmountStatus:
-            print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
+            #     return True
         else:
-            print('###商店未开放或未成功获取总价格,或者总金额计算错误,间隔30sec查询中')
-            sleep(30)
+            print(ret.text)
+            sleep(1)
             getUserCart(addressList, storeList, uid)
-
-        if Capacity_index > 0:
-            getCapacityData()
-            return False
-        else:
-            return True
     except Exception as e:
         print('getUserCart [Error]: ' + str(e))
         return False
@@ -277,11 +292,6 @@ def getCapacityData():
     global endRealTime
 
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/delivery/portal/getCapacityData'
-    date_list = []
-    for i in range(0, 7):
-        date_list.append(
-            (datetime.datetime.now() + datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-        )
     data = {
         "perDateList": date_list, "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId')
     }
@@ -306,20 +316,23 @@ def getCapacityData():
     }
     try:
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
-        # print(ret.text)
         myRet = json.loads(ret.text)
-        print('#获取可用配送时间中')
-        status = (myRet['data'].get('capcityResponseList')[0].get('dateISFull'))
-        time_list = myRet['data'].get('capcityResponseList')[0].get('list')
-        for i in range(0, len(time_list)):
-            if not time_list[i].get('timeISFull'):
-                startRealTime = time_list[i].get('startRealTime')
-                endRealTime = time_list[i].get('endRealTime')
-                # print(startRealTime)
-                print('#【成功】获取配送时间')
-                order(startRealTime, endRealTime)
-                return True
-        print("#【失败】配送时间满了！")
+        if myRet['success']:
+            print(str(count)+'\t#Get Available Shipping Times')
+            status = (myRet['data'].get('capcityResponseList')[0].get('dateISFull'))
+            time_list = myRet['data'].get('capcityResponseList')[0].get('list')
+            for i in range(0, len(time_list)):
+                if not time_list[i].get('timeISFull'):
+                    startRealTime = time_list[i].get('startRealTime')
+                    endRealTime = time_list[i].get('endRealTime')
+                    # print(startRealTime)
+                    print('#[success]Get shipping time')
+                    order(startRealTime, endRealTime)
+                    return True
+            print("#[fail]shipping time is full!")
+        else:
+            print(ret.text)
+            return False
     except Exception as e:
         print('getCapacityData [Error]: ' + str(e))
         return False
@@ -422,15 +435,20 @@ if __name__ == '__main__':
     startRealTime = ''
     endRealTime = ''
     goodlist = []
+    date_list = []
+    for i in range(0, 7):
+        date_list.append(
+            (datetime.datetime.now() + datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+        )
     # 初始化
     address, store, uid = init()
     if getUserCart(address, store, uid):
         # getCapacityData
         while 1:
             count += 1
-            # 每十次 获取一次购物车物品状态
-            if count % 10 == 0:
-                print('###重新获取购物车 商品库存')
+            # 每一百次 获取一次购物车物品状态
+            if count % 100 == 0:
+                print('###Refresh cart')
                 getUserCart(address, store, uid)
                 continue
             else:
@@ -449,5 +467,5 @@ if __name__ == '__main__':
                 sleep(6)
 
     else:
-        sleep(60)
+        sleep(3)
         getUserCart(address, store, uid)
