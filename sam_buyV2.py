@@ -76,6 +76,7 @@ def getAmount(goodlist):
             if myRet['code'] == 'NO_MATCH_DELIVERY_MODE':
                 print('请检查购物车情况,wait 30 sec')
                 sleep(30)
+                return False, amount
             elif myRet['code'] == 'LIMITED':
                 sleep(0.5)
                 return False, amount
@@ -284,7 +285,7 @@ def getUserCart(addressList, storeList, uid):
             sleep(1)
             getUserCart(addressList, storeList, uid)
     except Exception as e:
-        print('getUserCart [Error]: ' + str(e))
+        print('getUserCart [Error] 请检查购物车: ' + str(e))
         return False
 
 
@@ -348,7 +349,7 @@ def order(startRealTime, endRealTime):
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/settlement/commitPay'
     data = {"goodsList": goodlist,
             "invoiceInfo": {},
-            "cartDeliveryType": cartDeliveryType, "floorId": 1, "amount": amount, "purchaserName": "",
+            "DeliveryType": cartDeliveryType, "floorId": 1, "amount": amount, "purchaserName": "",
             "settleDeliveryInfo": {"expectArrivalTime": startRealTime, "expectArrivalEndTime": endRealTime,
                                    "deliveryType": deliveryType}, "tradeType": "APP", "purchaserId": "", "payType": 0,
             "currency": "CNY", "channel": "wechat", "shortageId": 1, "isSelfPickup": 0, "orderType": 0,
