@@ -79,7 +79,7 @@ def getAmount(goodlist):
                 sleep(30)
                 return False, amount
             elif myRet['code'] == 'LIMITED':
-                sleep(0.5)
+                sleep(1)
                 return False, amount
             return False, amount
     except Exception as e:
@@ -269,12 +269,15 @@ def getUserCart(addressList, storeList, uid):
             if getAmountStatus:
                 print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
                 return True
+
             else:
-                print('###商店未开放或未成功获取总价格,或者总金额计算错误,间隔30sec查询中')
-                sleep(1)
-                if getUserCart(addressList, storeList, uid):
-                    return True
-                # return False
+                print('###商店未开放或未成功获取总价格,或者总金额计算错误,间隔 1 sec查询中')
+                # sleep(1)
+                # if getUserCart(addressList, storeList, uid):
+                #     print('[warning] 进入嵌套循环中...')
+                #     return True
+
+                return False
 
             # if Capacity_index > 0:
             #     getCapacityData()
@@ -282,9 +285,10 @@ def getUserCart(addressList, storeList, uid):
             # else:
             #     return True
         else:
-            print(ret.text)
-            sleep(1)
-            getUserCart(addressList, storeList, uid)
+            print('[getUserCart]'+str(myRet['code'])+str(myRet['msg']))
+            # sleep(1)
+            # getUserCart(addressList, storeList, uid)
+            return False
     except Exception as e:
         print('getUserCart [Error] 请检查购物车: ' + str(e))
         return False
@@ -428,6 +432,7 @@ def init():
     # global store
     address = address_list()
     store, uid = getRecommendStoreListByLocation(address.get('latitude'), address.get('longitude'))
+    print('初始化完成.')
     return address, store, uid
 
 
@@ -446,30 +451,34 @@ if __name__ == '__main__':
         )
     # 初始化
     address, store, uid = init()
-    if getUserCart(address, store, uid):
-        # getCapacityData
-        while 1:
-            count += 1
-            # 每一百次 获取一次购物车物品状态
-            if count % 100 == 0:
-                print('###Refresh cart')
-                getUserCart(address, store, uid)
-                continue
-            else:
-                getCapacityData()
-            now = datetime.datetime.now()
-            # now = datetime.datetime(2022,4,16,20,59)
-            isOpenTime = False
-            try:
-                isOpenTime = ([20, 10].index(now.hour) > -1 and [57, 58, 59].index(now.minute) > -1
-                              or [21, 11].index(now.hour) > -1 and now.minute < 6)
-            except Exception as e:
-                isOpenTime = False
-            if isOpenTime:
-                sleep(3)
-            else:
-                sleep(6)
+    print('获取购物车物品')
+    while 1:
+        if getUserCart(address, store, uid):
+            # getCapacityData
+            while 1:
+                count += 1
+                # 每一百次 获取一次购物车物品状态
 
-    else:
-        sleep(3)
-        getUserCart(address, store, uid)
+                now = datetime.datetime.now()
+                # now = datetime.datetime(2022,4,16,20,59)
+                isOpenTime = False
+                try:
+                    isOpenTime = ([20, 10].index(now.hour) > -1 and [57, 58, 59].index(now.minute) > -1
+                                  or [21, 11].index(now.hour) > -1 and now.minute < 6)
+                except Exception as e:
+                    isOpenTime = False
+                if isOpenTime:
+                    sleep(2)
+                else:
+                    if count % 100 == 0:
+                        print('###Refresh cart')
+                        getUserCart(address, store, uid)
+                        continue
+                    else:
+                        getCapacityData()
+                    sleep(5)
+
+        else:
+            sleep(1)
+            # getUserCart(address, store, uid)
+            continue
