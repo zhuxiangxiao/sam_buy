@@ -67,7 +67,7 @@ def getAmount(goodlist):
     try:
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
         myRet = json.loads(ret.text)
-        amount = ''
+        # amount = ''
         if myRet['success']:
             amount = myRet['data'].get('totalAmount')
             return True, amount
