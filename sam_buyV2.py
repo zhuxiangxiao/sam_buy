@@ -398,6 +398,7 @@ def order(startRealTime, endRealTime):
                 # getCapacityData()
                 return
             elif myRet.get('code') == 'LIMITED':
+                print('[order]Limited,just retry')
                 index += 1
                 if index > 5:
                     index = 0
