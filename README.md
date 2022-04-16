@@ -33,7 +33,7 @@ deviceid,authtoken,trackinfo三个字段为购物车的HTTP头部的字段信息
 
 关于测试：
 
-把代码中唯一一句 if not 中的not去掉然后运行脚本，显示配送时间预约满 即为测试成功.
+把代码中唯一一句 if not 中的not去掉然后运行脚本，不显示异常 即为测试成功.
 
 另外 测试完成后记得还原if not.
 
