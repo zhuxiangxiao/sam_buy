@@ -209,8 +209,7 @@ def getRecommendStoreListByLocation(latitude, longitude):
 def getUserCart(addressList, storeList, uid):
     global goodlist
     global amount
-    # 初始化goodlist置为空
-    goodlist = []
+
 
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/cart/getUserCart'
     data = {
@@ -242,6 +241,8 @@ def getUserCart(addressList, storeList, uid):
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
         myRet = json.loads(ret.text)
         if myRet['success']:
+            # 初始化goodlist置为空
+            goodlist = []
             # print(myRet['data'].get('capcityResponseList')[0])
             normalGoodsList = (myRet['data'].get('floorInfoList')[0].get('normalGoodsList'))
             # time_list = myRet['data'].get('capcityResponseList')[0].get('list')
