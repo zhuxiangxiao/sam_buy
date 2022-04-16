@@ -27,66 +27,68 @@ timeOrder = config.get('system', 'timeOrder')
 
 def getAmount(goodlist):
     global amount
-    myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/settlement/getSettleInfo'
-    headers = {
-        'Host': 'api-sams.walmartmobile.cn',
-        'Connection': 'keep-alive',
-        'Accept': '*/*',
-        'Content-Type': 'application/json;charset=UTF-8',
-        'Content-Length': '45',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'zh-CN,zh;q=0.9',
-        'User-Agent': 'SamClub/5.0.45 (iPhone; iOS 15.4; Scale/3.00)',
-        'device-name': 'iPhone14,3',
-        'device-os-version': '15.4',
-        'device-id': deviceid,
-        'latitude': address.get('latitude'),
-        'longitude': address.get('longitude'),
-        'device-type': 'ios',
-        'auth-token': authtoken,
-        'app-version': '5.0.45.1'
-    }
-    data = {
-        "goodsList": goodlist,
-        "uid": uid,
-        "addressId": addressList_item.get('addressId'),
-        "deliveryInfoVO": {
-            "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId'),
-            "deliveryModeId": good_store.get('deliveryModeId'),
-            "storeType": good_store.get('storeType')
-        },
-        "cartDeliveryType": cartDeliveryType,
-        "storeInfo": {
-            "storeId": good_store.get('storeId'),
-            "storeType": good_store.get('storeType'),
-            "areaBlockId": good_store.get('areaBlockId')
-        },
-        "couponList": [],
-        "isSelfPickup": 0,
-        "floorId": 1,
-    }
+    # myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/settlement/getSettleInfo'
+    # headers = {
+    #     'Host': 'api-sams.walmartmobile.cn',
+    #     'Connection': 'keep-alive',
+    #     'Accept': '*/*',
+    #     'Content-Type': 'application/json;charset=UTF-8',
+    #     'Content-Length': '45',
+    #     'Accept-Encoding': 'gzip, deflate',
+    #     'Accept-Language': 'zh-CN,zh;q=0.9',
+    #     'User-Agent': 'SamClub/5.0.45 (iPhone; iOS 15.4; Scale/3.00)',
+    #     'device-name': 'iPhone14,3',
+    #     'device-os-version': '15.4',
+    #     'device-id': deviceid,
+    #     'latitude': address.get('latitude'),
+    #     'longitude': address.get('longitude'),
+    #     'device-type': 'ios',
+    #     'auth-token': authtoken,
+    #     'app-version': '5.0.45.1'
+    # }
+    # data = {
+    #     "goodsList": goodlist,
+    #     "uid": uid,
+    #     "addressId": addressList_item.get('addressId'),
+    #     "deliveryInfoVO": {
+    #         "storeDeliveryTemplateId": good_store.get('storeDeliveryTemplateId'),
+    #         "deliveryModeId": good_store.get('deliveryModeId'),
+    #         "storeType": good_store.get('storeType')
+    #     },
+    #     "cartDeliveryType": cartDeliveryType,
+    #     "storeInfo": {
+    #         "storeId": good_store.get('storeId'),
+    #         "storeType": good_store.get('storeType'),
+    #         "areaBlockId": good_store.get('areaBlockId')
+    #     },
+    #     "couponList": [],
+    #     "isSelfPickup": 0,
+    #     "floorId": 1,
+    # }
 
-    try:
-        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
-        myRet = json.loads(ret.text)
-        # amount = ''
-        if myRet['success']:
-            amount = myRet['data'].get('totalAmount')
-            return True, amount
-        else:
-            amount = ''
-            print('[getAmount]' + str(myRet['code']) + str(myRet['msg']))
-            if myRet['code'] == 'NO_MATCH_DELIVERY_MODE':
-                print('请检查购物车情况,wait 30 sec')
-                sleep(30)
-                return False, amount
-            elif myRet['code'] == 'LIMITED':
-                sleep(1)
-                return False, amount
-            return False, amount
-    except Exception as e:
-        print('getAmount [Error]: ' + str(e))
-        exit()
+    # try:
+    #     ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
+    #     myRet = json.loads(ret.text)
+    #     # amount = ''
+    #     if myRet['success']:
+    #         amount = myRet['data'].get('totalAmount')
+    #         return True, amount
+    #     else:
+    #         amount = ''
+    #         print('[getAmount]' + str(myRet['code']) + str(myRet['msg']))
+    #         if myRet['code'] == 'NO_MATCH_DELIVERY_MODE':
+    #             print('请检查购物车情况,wait 30 sec')
+    #             sleep(30)
+    #             return False, amount
+    #         elif myRet['code'] == 'LIMITED':
+    #             sleep(1)
+    #             return False, amount
+    #         return False, amount
+    # except Exception as e:
+    #     print('getAmount [Error]: ' + str(e))
+    #     exit()
+    amount=0
+    return True,amount
 
 
 def address_list():
@@ -269,7 +271,9 @@ def getUserCart(addressList, storeList, uid):
 
             getAmountStatus, amount = getAmount(goodlist)
             if getAmountStatus:
-                print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
+                # print('###获取购物车商品成功,总金额：' + str(int(amount) / 100))
+                print('###获取购物车商品成功,总金额计算跳过')
+
                 return True
 
             else:
