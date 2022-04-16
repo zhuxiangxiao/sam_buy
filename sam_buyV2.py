@@ -72,6 +72,7 @@ def getAmount(goodlist):
             amount = myRet['data'].get('totalAmount')
             return True, amount
         else:
+            amount = ''
             print(str(myRet['code']) + str(myRet['msg']))
             if myRet['code'] == 'NO_MATCH_DELIVERY_MODE':
                 print('请检查购物车情况,wait 30 sec')
