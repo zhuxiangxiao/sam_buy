@@ -75,7 +75,7 @@ def getAmount(goodlist):
             return True, amount
         else:
             amount = ''
-            print(str(myRet['code']) + str(myRet['msg']))
+            print('[getAmount]' + str(myRet['code']) + str(myRet['msg']))
             if myRet['code'] == 'NO_MATCH_DELIVERY_MODE':
                 print('请检查购物车情况,wait 30 sec')
                 sleep(30)
@@ -479,8 +479,10 @@ if __name__ == '__main__':
                 else:
                     if count % 100 == 0:
                         print('###Refresh cart')
-                        getUserCart(address, store, uid)
-                        continue
+                        if getUserCart(address, store, uid):
+                            continue
+                        else:
+                            break
                     else:
                         getCapacityData()
                     sleep(5)
