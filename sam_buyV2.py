@@ -132,11 +132,40 @@ def address_list():
             addressList[i].get(
                 "districtName")) + str(addressList[i].get("receiverAddress")) + str(
             addressList[i].get("detailAddress")))
-    print('根据编号选择地址:')
-    s = int(input())
-    addressList_item = addressList_item[s]
+
+    success, choice = getRangedNumericChoice('根据编号选择地址', 0, len(addressList_item) - 1)
+
+    if not success:
+        print('程序即将退出！')
+        exit()
+
+    addressList_item = addressList_item[choice]
     # print(addressList_item)
     return addressList_item
+
+
+def getRangedNumericChoice(init_msg: str, start: int, end: int) -> tuple:
+    print(f'{init_msg}[{start} - {end}]: (退出请按q键)')
+
+    while True:
+        choice = input()
+
+        if choice.lower() == 'q':
+            return False, -1
+
+        try:
+            value = int(choice)
+            if start <= value <= end:
+                return True, value 
+            else:
+                raise IndexError
+        except ValueError:
+            print(f'输入的编号应为整数, 输入范围应为[{start} - {end}]: (退出请按q键)')
+            continue
+    
+        except IndexError:
+            print(f'输入范围应为[{start} - {end}]: (退出请按q键)')
+            continue
 
 
 def getRecommendStoreListByLocation(latitude, longitude):
@@ -182,9 +211,14 @@ def getRecommendStoreListByLocation(latitude, longitude):
                     'storeName': storeList[i].get("storeName")
                 })
             print('[' + str(i) + ']' + str(storeList_item[i].get("storeId")) + str(storeList_item[i].get("storeName")))
-        print('根据编号下单商店:')
-        s = int(input())
-        good_store = storeList_item[s]
+
+        success, choice = getRangedNumericChoice('根据编号下单商店:', 0, len(storeList_item) - 1)
+
+        if not success:
+            print('程序即将退出！')
+            exit()
+
+        good_store = storeList_item[choice]
         uidUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/sams-user/user/personal_center_info'
         ret = requests.get(url=uidUrl, headers={
             'Host': 'api-sams.walmartmobile.cn',
