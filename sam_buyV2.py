@@ -136,7 +136,7 @@ def address_list():
     success, choice = getRangedNumericChoice('根据编号选择地址', 0, len(addressList_item) - 1)
 
     if not success:
-        print('程序即将退出！')
+        print('请检查有无详细地址,程序即将退出！')
         exit()
 
     addressList_item = addressList_item[choice]
@@ -428,7 +428,6 @@ def order(startRealTime, endRealTime):
 
     try:
         ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
-        # print(ret.text)
         myRet = json.loads(ret.text)
         status = myRet.get('success')
         if status:
@@ -463,6 +462,7 @@ def order(startRealTime, endRealTime):
                 getUserCart(addressList_item, good_store, uid)
                 return
             else:
+                print(ret.text)
                 # getCapacityData()
                 return
 
