@@ -191,6 +191,7 @@ def getRecommendStoreListByLocation(latitude, longitude):
         'device-os-version': '15.4',
         'device-id': deviceid,
         'latitude': latitude,
+        'longitude': longitude,
         'device-type': 'ios',
         'auth-token': authtoken,
         'app-version': '5.0.45.1'
@@ -462,7 +463,7 @@ def order(startRealTime, endRealTime):
                 getUserCart(addressList_item, good_store, uid)
                 return
             else:
-                print(ret.text)
+                print(str(myRet.get('msg')))
                 # getCapacityData()
                 return
 
@@ -477,7 +478,7 @@ def init():
     # global store
     address = address_list()
     store, uid = getRecommendStoreListByLocation(address.get('latitude'), address.get('longitude'))
-    print('初始化完成.')
+    print('#初始化完成.')
     return address, store, uid
 
 
@@ -496,7 +497,7 @@ if __name__ == '__main__':
         )
     # 初始化
     address, store, uid = init()
-    print('获取购物车物品')
+    print('#获取购物车物品')
     while 1:
         if getUserCart(address, store, uid):
             # getCapacityData
