@@ -514,7 +514,7 @@ if __name__ == '__main__':
                 open_time_5 = datetime.datetime.strptime(str(now.date()) + '07:58', '%Y-%m-%d%H:%M')
                 open_time_6 = datetime.datetime.strptime(str(now.date()) + '08:02', '%Y-%m-%d%H:%M')
                 is_open_time = open_time_1 < now < open_time_2 or open_time_3 < now < open_time_4 or open_time_5 < now < open_time_6
-                if isOpenTime:
+                if is_open_time:
                     sleep(2)
                 else:
                     if count % 100 == 0:
