@@ -504,15 +504,16 @@ if __name__ == '__main__':
             while 1:
                 count += 1
                 # 每一百次 获取一次购物车物品状态
-
                 now = datetime.datetime.now()
                 # now = datetime.datetime(2022,4,16,20,59)
-                isOpenTime = False
-                try:
-                    isOpenTime = ([20, 10].index(now.hour) > -1 and [ 58, 59].index(now.minute) > -1
-                                  or [21, 11].index(now.hour) > -1 and now.minute < 2)
-                except Exception as e:
-                    isOpenTime = False
+                # bug fix 【1，2】用于白天全城配，【3，4】用于晚上全城配，【5，6】用于极速达
+                open_time_1 = datetime.datetime.strptime(str(now.date()) + '10:58', '%Y-%m-%d%H:%M')
+                open_time_2 = datetime.datetime.strptime(str(now.date()) + '11:02', '%Y-%m-%d%H:%M')
+                open_time_3 = datetime.datetime.strptime(str(now.date()) + '20:58', '%Y-%m-%d%H:%M')
+                open_time_4 = datetime.datetime.strptime(str(now.date()) + '21:02', '%Y-%m-%d%H:%M')
+                open_time_5 = datetime.datetime.strptime(str(now.date()) + '07:58', '%Y-%m-%d%H:%M')
+                open_time_6 = datetime.datetime.strptime(str(now.date()) + '08:02', '%Y-%m-%d%H:%M')
+                is_open_time = open_time_1 < now < open_time_2 or open_time_3 < now < open_time_4 or open_time_5 < now < open_time_6
                 if isOpenTime:
                     sleep(2)
                 else:
