@@ -509,8 +509,8 @@ if __name__ == '__main__':
                 # now = datetime.datetime(2022,4,16,20,59)
                 isOpenTime = False
                 try:
-                    isOpenTime = ([20, 10].index(now.hour) > -1 and [57, 58, 59].index(now.minute) > -1
-                                  or [21, 11].index(now.hour) > -1 and now.minute < 6)
+                    isOpenTime = ([20, 10].index(now.hour) > -1 and [ 58, 59].index(now.minute) > -1
+                                  or [21, 11].index(now.hour) > -1 and now.minute < 2)
                 except Exception as e:
                     isOpenTime = False
                 if isOpenTime:
