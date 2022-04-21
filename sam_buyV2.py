@@ -1,4 +1,5 @@
 import json
+from math import fabs
 import requests
 from time import sleep
 import configparser
@@ -65,9 +66,9 @@ def getAmount(goodlist):
     }
 
     try:
-        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
+        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data),verify=False)
         myRet = json.loads(ret.text)
-        # amount = ''
+    
         if myRet['success']:
             amount = myRet['data'].get('totalAmount')
             return True, amount
@@ -76,9 +77,11 @@ def getAmount(goodlist):
             if myRet['code'] == 'NO_MATCH_DELIVERY_MODE':
                 print('请检查购物车情况,wait 30 sec')
                 sleep(30)
+                amount = ''
                 return False, amount
             elif myRet['code'] == 'LIMITED':
                 sleep(0.5)
+                amount = ''
                 return False, amount
             return False, amount
     except Exception as e:
@@ -104,7 +107,7 @@ def address_list():
         'auth-token': authtoken,
         'app-version': '5.0.45.1'
     }
-    ret = requests.get(url=myUrl, headers=headers)
+    ret = requests.get(url=myUrl, headers=headers,verify=False)
     myRet = json.loads(ret.text)
     addressList = myRet['data'].get('addressList')
     addressList_item = []
@@ -162,7 +165,7 @@ def getRecommendStoreListByLocation(latitude, longitude):
         'app-version': '5.0.45.1'
     }
     try:
-        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
+        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data),verify=False)
         myRet = json.loads(ret.text)
         storeList = myRet['data'].get('storeList')
         for i in range(0, len(storeList)):
@@ -195,7 +198,7 @@ def getRecommendStoreListByLocation(latitude, longitude):
             'device-type': 'ios',
             'auth-token': authtoken,
             'app-version': '5.0.45.1'
-        })
+        },verify=False)
         # print(ret.text)
         uidRet = json.loads(ret.text)
         uid = uidRet['data']['memInfo']['uid']
@@ -239,7 +242,7 @@ def getUserCart(addressList, storeList, uid):
 
     }
     try:
-        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
+        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data),verify=False)
         myRet = json.loads(ret.text)
         if myRet['success']:
             # 初始化goodlist置为空
@@ -317,7 +320,7 @@ def getCapacityData():
 
     }
     try:
-        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
+        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data),verify=False)
         myRet = json.loads(ret.text)
         if myRet['success']:
             print(str(count)+'\t#Get Available Shipping Times')
@@ -382,7 +385,7 @@ def order(startRealTime, endRealTime):
     }
 
     try:
-        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data))
+        ret = requests.post(url=myUrl, headers=headers, data=json.dumps(data),verify=False)
         # print(ret.text)
         myRet = json.loads(ret.text)
         status = myRet.get('success')
@@ -449,7 +452,7 @@ if __name__ == '__main__':
         while 1:
             count += 1
             # 每一百次 获取一次购物车物品状态
-            if count % 100 == 0:
+            if count % 1000 == 0:
                 print('###Refresh cart')
                 getUserCart(address, store, uid)
                 continue
@@ -464,9 +467,9 @@ if __name__ == '__main__':
             except Exception as e:
                 isOpenTime = False
             if isOpenTime:
-                sleep(3)
+                sleep(1)
             else:
-                sleep(6)
+                sleep(1)
 
     else:
         sleep(3)
