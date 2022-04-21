@@ -16,7 +16,7 @@ config.read('config.ini', "utf-8")
 deviceid = config.get('userInfo', 'deviceid')
 authtoken = config.get('userInfo', 'authtoken')
 trackinfo = config.get('userInfo', 'trackinfo')
-keyword = config.get('userInfo', 'keyword')
+keyword = '保供'
 
 
 def init():
