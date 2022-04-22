@@ -1,6 +1,8 @@
 import json
 import sys
 import os
+from random import random
+
 import requests
 from time import sleep
 import configparser
@@ -79,22 +81,32 @@ if __name__ == '__main__':
     while 1:
         searchData = search(keyword, address, store, uid)
         dataList = searchData['dataList']
+        isStock = False
         if len(dataList) > 0:
             print("*** 你要的货物如下：\n")
             for data in dataList:
-                print("{} 有货:{} 运输:{} 价格:{} {}".format(data["title"], data["isAvailable"], data["deliveryAttr"],
+                stock_state="无货"
+                if data["isStock"]:
+                    stock_state = "有货"
+
+                print("{} {} 运输:{} 价格:{} {}".format(data["title"], stock_state, data["deliveryAttr"],
                                                         data["priceInfo"][0]["price"], data["subTitle"]))
-            file = "nb.mp3"
-            if sys.platform == 'darwin':
-                # macOS
-                os.system("open " + file)
+                if data["isStock"]:
+                    isStock=True
+            if isStock:
+                file = "nb.mp3"
+                if sys.platform == 'darwin':
+                    # macOS
+                    os.system("open " + file)
+                else:
+                    os.system(file)
+                print("*** 快去加购物车吧：\n")
+                # os.system(file)
+                exit()
+                break
             else:
-                os.system(file)
-            print("*** 快去加购物车吧：\n")
-            # os.system(file)
-            exit()
-            break
+                sleep(5*random())
         else:
-            sleep(5)
+            sleep(10*random())
             print("*** 没有：\n")
             continue
