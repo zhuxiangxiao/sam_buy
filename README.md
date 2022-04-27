@@ -17,6 +17,8 @@
 
 最后感谢@jxs0112 @guyong @Asterodeiawd 参与开发，和大家接近100star的支持.90°弯腰~
 
+保供专用：https://github.com/guyongzx/SamsClub_buy
+
 ### 如果本工程对你有所帮助,记得点个star鼓励一下作者QAQ :)
 
 platform: ios15;
