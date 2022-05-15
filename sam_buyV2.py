@@ -251,7 +251,8 @@ def getUserCart(addressList, storeList, uid):
     global goodlist
     global amount
 
-
+    if not isinstance(storeList, list):
+        storeList = [storeList]
     myUrl = 'https://api-sams.walmartmobile.cn/api/v1/sams/trade/cart/getUserCart'
     data = {
         # YOUR SELF
